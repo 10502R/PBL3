@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voting App</title>
+</head>
+<body>
+    <h1>떡볶이 vs 치킨</h1>
+    {% if user_vote %}
+        <p>당신은 '{{ user_vote }}'를 선택했습니다!</p>
+    {% else %}
+        <form action="/vote" method="POST">
+            <input type="radio" id="tteokbokki" name="choice" value="tteokbokki">
+            <label for="tteok">떡볶이</label><br>
+
+            <input type="radio" id="chicken" name="choice" value="chicken">
+            <label for="chicken">치킨</label><br>
+
+            <button type="submit">투표하기</button>
+        </form>
+        {% endif %}
+    </body>
+    </html>    
