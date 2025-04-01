@@ -1,0 +1,31 @@
+/* 가운데 정렬 */
+#wrapper {
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+
+/* 이메일 입력하는 창 */
+#email {
+    width: 60%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #eaeaea;
+}
+
+/* 로그인 버튼 */
+#login {
+    width: 20%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #eaeaea;
+}
+
+/* 투표창으로 돌아가는 버튼 */
+#back {
+    width: 50%;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: 1px solid #eaeaea;
+}
+
