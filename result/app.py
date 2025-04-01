@@ -3,10 +3,6 @@ import os
 
 app = Flask(__name__)
 
-# 정적 파일 경로 추가 (assets 폴더 서빙)
-@app.route('/assets/<path:filename>')
-def serve_static(filename):
-    return send_from_directory(os.path.join(app.root_path, 'assets'), filename)
 
 # 투표 결과 저장 (간단한 딕셔너리 사용)
 votes = {"떡볶이": 0, "치킨": 0}
@@ -34,6 +30,15 @@ def results():
         percentages = {key: (value / total) * 100 for key, value in votes.items()}
     
     return jsonify(percentages)
+
+@app.route('/assets/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(os.path.join(app.root_path, 'assets'), filename)
+# 정적 파일 경로 추가 (assets 폴더 서빙)
+@app.route('/assets/<path:filename>')
+def serve_static(filename):
+    return send_from_directory(os.path.join(app.root_path, 'assets'), filename)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
