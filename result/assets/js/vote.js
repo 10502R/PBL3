@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function submitVote(choice) {
         console.log(choice + " 선택됨!");  // 디버깅용 로그
-        fetch("/vote", {
+        fetch("http://localhost:5000/vote", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function updateResults() {
-        fetch("/results")
+        fetch("http://localhost:5000/results")
         .then(response => response.json())
         .then(data => {
             document.getElementById("resultTteokbokki").textContent = `떡볶이: ${data["떡볶이"].toFixed(1)}%`;
