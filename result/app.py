@@ -31,14 +31,10 @@ def results():
     
     return jsonify(percentages)
 
-@app.route('/assets/<path:filename>')
+# 정적 파일 서빙 (필요할 경우만 사용, 기본적으로 Flask는 static 폴더를 자동으로 서빙함)
+@app.route('/static/<path:filename>')
 def serve_static(filename):
-    return send_from_directory(os.path.join(app.root_path, 'assets'), filename)
-# 정적 파일 경로 추가 (assets 폴더 서빙)
-@app.route('/assets/<path:filename>')
-def serve_static(filename):
-    return send_from_directory(os.path.join(app.root_path, 'assets'), filename)
-
+    return send_from_directory(os.path.join(app.root_path, 'static'), filename)
 
 if __name__ == '__main__':
     app.run(debug=True)
