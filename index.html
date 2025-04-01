@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>투표앱</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="style.css">
+
+    <!--폰트-->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Hahmlet&display=swap" rel="stylesheet">
+</head>
+
+<body data-bs-spy="scroll" data-bs-target="#nav-menu">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+
+  <!-- 네비게이션 영역 시작 -->
+  <nav id="navbar" class="navbar bg-black px-3 mb-3">
+    <img src="new/logo.jpg" alt="logo" class="img-fluid" width="50" height="50">
+    <a class="navbar-brand fw-bold text-start text-white" href="index.html">투표앱</a>
+
+    <ul class="nav nav-pills text-reset">
+      <li class="nav-item">
+        <a class="nav-link text-white" href="voteresult.html">투표 결과</a></li>
+      <li class="nav-item">
+        <a class="nav-link text-white" href="star.html">옵션2</a></li>
+        <li class="nav-item">
+            <a class="nav-link text-white" href="musicbox.html">옵션3</a></li>
+      <li class="nav-item dropdown" href="important.html">
+        <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">네비게이션</a>
+        <ul id="dropdowns" class="dropdown-menu bg-secondary">
+          <li><a class="dropdown-item text-white" href="important.html">네비게이션옵션1</a></li>
+          <li><a class="dropdown-item text-white" href="important.html">네비게이션옵션2</a></li>
+          <li><a class="dropdown-item text-white" href="important.html">네비게이션옵션3</a></li>
+        </ul> 
+      </li>
+    </ul>
+  </nav>
+            
+    <!-- 네비게이션 영역 끝 -->
+
+<!-- 메인화면 섹션 시작 -->
+    <section class="py-1 text-center" id="home">
+
+      <div class="flex flex-col items-center bg-white min-h-screen">
+        <h1 class="text-black text-3xl font-bold mt-16 mb-6">
+            떡볶이 vs 치킨
+        </h1>
+        <div class="btn-group" role="group" aria-label="group1">
+          <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
+          <label class="btn btn-outline-primary" for="btnradio1">떡볶이</label>
+        
+          <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+          <label class="btn btn-outline-primary" for="btnradio2">치킨</label>
+        </div>
+    </div>
+    
+  </section>
+  <!-- 메인화면 섹션 끝 -->
+
+</body>
+</html>

@@ -1,0 +1,52 @@
+/* 전체 화면 설정 */
+#home {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+  }
+
+  /* 제목 스타일 */
+  h1 {
+    margin-top: 100px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: black;
+    text-align: center;
+  }
+
+  /* 버튼 그룹 정렬 */
+  .btn-group {
+    display: flex;
+    margin-top: 50px;
+  }
+
+  /* 라디오 버튼 숨기기 */
+  .btn-check {
+    display: none;
+  }
+
+  /* 라벨 버튼 기본 스타일 */
+  .btn {
+    font-size: 64px;
+    font-weight: bold;
+    border: 2px solid #007bff;
+    color: #007bff;
+    background-color: white;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 20px;
+    transition: all 0.3s ease;
+  }
+
+  /* 버튼 호버 효과 */
+  .btn:hover {
+    background-color: #007bff;
+    color: white;
+  }
+
+  /* 선택된 버튼 스타일 */
+  .btn-check:checked + .btn {
+    background-color: #007bff;
+    color: white;
+  }
