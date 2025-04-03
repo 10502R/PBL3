@@ -51,6 +51,63 @@ h1 {
     color: white;
 }
 
+/* 전체 컨테이너 스타일 */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  /* 카드 스타일 */
+  .bg-red {
+    background-color: #ff4d4d; /* 떡볶이 카드 배경색 */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .bg-yellow {
+    background-color: #ffc107; /* 치킨 카드 배경색 */
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  /* 카드 호버 효과 */
+  .bg-red:hover,
+  .bg-yellow:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15);
+  }
+  
+  /* 텍스트 스타일 */
+  h2 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 10px;
+    padding: auto;
+  }
+  
+  h3 {
+    font-size: 1rem;
+    color: #333;
+    padding: auto;
+  }
+  
+  /* 반응형 디자인 */
+  @media (max-width: 768px) {
+    .flex {
+      flex-direction: column;
+      gap: 20px;
+    }
+  }
+
 /* 가운데 정렬 */
 #wrapper {
     max-width: 500px;
