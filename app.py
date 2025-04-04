@@ -26,24 +26,20 @@ def index():
     user_vote = request.cookies.get('vote')
     return render_template('index.html', deadline=DEADLINE.isoformat(), user_vote=user_vote)
 
+# 딕셔너리 저장
+votes = {"tteokbokki": 0, "chicken": 0}
+
 @app.route('/vote', methods=['POST'])
 def vote():
-    data = request.form
-    choice = data.get('choice')
+    choice = request.form.get('choice')
 
-    if choice not in ['tteokbokki', 'chicken']:
-        return "error : Invalid choice", 400
+    if choice not in votes:  
+        return "error: Invalid choice", 400
 
-    user_cookie = request.cookies.get('vote')
-    if user_cookie:
-        return f"You have already voted! your_choice: {choice}", 403
+    votes[choice] += 1  # 투표 수 증가
 
-    redis_client.incr(choice)
-    votes[choice] += 1
-    
-    response = make_response(redirect('/'))
-    response.set_cookie('vote', choice, max_age=60*10)
-    return response
+    return jsonify({"message": "Vote counted"})
+
 
 @app.route('/my-vote', methods=['GET'])
 def my_vote():
@@ -55,8 +51,17 @@ def my_vote():
 @app.route('/results', methods=['GET'])
 def results():
     total = sum(votes.values())
-    percentages = {key: (value / total) * 100 for key, value in votes.items()} if total else {"떡볶이": 50, "치킨": 50}
-    return jsonify(percentages)
+    percentages = {
+        "tteokbokki": (votes["tteokbokki"] / total) * 100 if total else 50,
+        "chicken": (votes["chicken"] / total) * 100 if total else 50
+    }
+
+    return jsonify({
+        "tteokbokki": round(percentages["tteokbokki"], 1),
+        "tteokbokki_votes": votes["tteokbokki"],
+        "chicken": round(percentages["chicken"], 1),
+        "chicken_votes": votes["chicken"]
+    })
 
 @app.route('/static/<path:filename>')
 def serve_static(filename):
@@ -101,7 +106,7 @@ def save_email_to_json(email):
 
 # 이메일 예약 전송
 def schedule_email_send():
-    send_time_str = "2025-04-05 00:00:00"
+    send_time_str = "2025-04-04 06:53:00"
     send_time = datetime.strptime(send_time_str, "%Y-%m-%d %H:%M:%S")
     current_time = datetime.now()
     if send_time < current_time:
