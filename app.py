@@ -23,7 +23,6 @@ votes = {"떡볶이": 0, "치킨": 0}
 
 @app.route('/')
 def index():
-    user_vote = request.cookies.get('vote')
     return render_template('index.html', deadline=DEADLINE.isoformat(), user_vote=user_vote)
 
 # 딕셔너리 저장
@@ -37,6 +36,15 @@ def vote():
         return "error: Invalid choice", 400
 
     votes[choice] += 1  # 투표 수 증가
+    
+    user_cookie = request.cookies.get('vote')
+    if user_cookie:
+        return "You have already voted!", 400
+    
+    redis_client.incr(choice)
+    response = make_response(redirect('/results'))
+    response.set_cookie('vote', choice, max_age=60)  # 쿠키 설정 (7일)
+    return response
 
     return jsonify({"message": "Vote counted"})
 
