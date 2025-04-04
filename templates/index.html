@@ -41,6 +41,7 @@
               const timer = setInterval(updateCountdown, 1000); // 매초 업데이트
           });
       </script>
+      
   </head>
 
   <body data-bs-spy="scroll" data-bs-target="#nav-menu">
@@ -80,28 +81,88 @@
 
   <!-- 메인화면 섹션 시작 -->
   <section class="py-1 text-center" id="home">
-    {% if user_vote %}
-    <p>당신은 '{{ user_vote }}'를 선택했습니다!</p>
-    {% else %}
-      <div class="flex flex-col items-center bg-white min-h-screen">
-        <h1 class="text-black text-3xl font-bold mt-16 mb-6">
-            떡볶이 vs 치킨 최고의 야식은 ?
-        </h1>
-        <div class="btn-group w-auto" role="group" aria-label="group1">
-          <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
-          <label class="btn btn-outline-primary btn-lg px-10 py-10" for="btnradio1">떡볶이</label>
-        
-          <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-          <label class="btn btn-outline-primary btn-lg px-10 py-10" for="btnradio2">치킨</label>
+
+    <div class="flex flex-col items-center bg-white min-h-screen">
+      <h1 class="text-black text-3xl font-bold mt-16 mb-6">
+          떡볶이 vs 치킨 최고의 야식은 ?
+      </h1>
+      <div class="container mx-auto flex flex-col items-center justify-center">
+        <div class="flex flex-col md:flex-row items-center justify-center space-x-4 space-y-4 md:space-y-0">
+          
+          <!-- 떡볶이 카드 -->
+          <div id="tteokbokki" class="vote-container bg-red-600 text-white p-6 rounded-lg shadow-lg w-full max-w-xs cursor-pointer">
+            <h2 class="text-xl font-bold mb-2">떡볶이</h2>
+            <h3 class="text-white"><span id="tteokbokki-percent">50</span> %</h3>
+            <p id="tteokbokki-votes" class="text-sm text-gray-300">0표</p>
+          </div>
+    
+          <!-- 치킨 카드 -->
+          <div id="chicken" class="vote-container bg-yellow-400 text-black p-6 rounded-lg shadow-lg w-full max-w-xs cursor-pointer">
+            <h2 class="text-xl font-bold mb-2">치킨</h2>
+            <h3 class="text-gray-800"><span id="chicken-percent">50</span> %</h3>
+            <p id="chicken-votes" class="text-sm text-gray-700">0표</p>
+          </div>
+    
         </div>
+      <div class="btn-group w-auto" role="group" aria-label="group1">
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
+        <label class="btn btn-outline-primary btn-lg px-10 py-10" for="btnradio1">떡볶이</label>
+      
+        <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
+        <label class="btn btn-outline-primary btn-lg px-10 py-10" for="btnradio2">치킨</label>
       </div>
-    {% endif %}
+    </div>
+    
+  
 </section>
 <!-- 메인화면 섹션 끝 -->
+
+<section>
+{% if user_vote %}
+        <p>당신은 '{{ user_vote }}'를 선택했습니다!</p>
+    {% else %}
+        <form action="/vote" method="POST">
+            <input type="radio" id="tteokbokki" name="choice" value="tteokbokki">
+            <label for="tteok">떡볶이</label><br>
+
+            <input type="radio" id="chicken" name="choice" value="chicken">
+            <label for="chicken">치킨</label><br>
+
+            <button type="submit">투표하기</button>
+        </form>
+    {% endif %}
+</section>
 <!-- jQuery CDN 추가 -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<!-- vote.js 연결 -->
-<script src="assets/js/vote.js"></script>
+<script>
+document.querySelectorAll('.vote-container').forEach(container => {
+  container.addEventListener('click', function () {
+    const choice = this.id; // "tteokbokki" or "chicken"
 
-  </body>
+    fetch('/vote', {
+      method: 'POST',
+      body: new URLSearchParams({ choice }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.text().then(text => { throw new Error(text); });
+      }
+      return fetch('/results'); // 최신 결과 요청
+    })
+    .then(response => response.json())
+    .then(data => {
+      // 퍼센트 업데이트
+      document.getElementById('tteokbokki-percent').innerText = data["tteokbokki"];
+      document.getElementById('chicken-percent').innerText = data["chicken"];
+      
+      // 표 수 업데이트
+      document.getElementById('tteokbokki-votes').innerText = `${data["tteokbokki_votes"]}표`;
+      document.getElementById('chicken-votes').innerText = `${data["chicken_votes"]}표`;
+    })
+    .catch(error => alert("투표 중 오류 발생: " + error.message));
+  });
+});
+</script>
+</body>
 </html>
