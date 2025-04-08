@@ -57,8 +57,19 @@
         <a class="nav-link text-white" href="voteresult.html">투표 결과</a></li>
       <li class="nav-item">
         <a class="nav-link text-white" href="login_page.html">옵션</a></li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="{{ url_for('login_page') }}">로그인</a></li>
+        <!-- <li class="nav-item">
+            <a class="nav-link text-white" href="{{ url_for('login_page') }}">로그인</a></li> -->
+        <!-- 로그인된 사용자만 로그아웃 버튼 보이기 -->
+        {% if current_user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/logout"><button>로그아웃</button></a>
+            </li>
+        {% else %}
+            <!-- 로그인하지 않은 사용자만 로그인 버튼 보이기 -->
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/login_page"><button>로그인</button></a>
+            </li>
+        {% endif %}    
             <!--
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">네비게이션</a>
