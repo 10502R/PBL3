@@ -1,21 +1,50 @@
 <!doctype html>
 <html lang="ko">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>투표앱</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
-    <link rel="stylesheet" href="style.css">
+  <head>
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>투표앱</title>
+      <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-Zenh87qX5JnK2Jl0vWa8Ck2rdkQ2Bzep5IDxbcnCeuOxjzrPF/et3URy9Bv1WTRi" crossorigin="anonymous">
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.9.1/font/bootstrap-icons.css">
+      <link rel="stylesheet" href="{{ url_for('static', filename='stylesheets/style.css') }}">
 
-    <!--폰트-->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Hahmlet&display=swap" rel="stylesheet">
-</head>
+      <!--폰트-->
+      <link rel="preconnect" href="https://fonts.googleapis.com">
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+      <link href="https://fonts.googleapis.com/css2?family=Hahmlet&display=swap" rel="stylesheet">
 
-<body data-bs-spy="scroll" data-bs-target="#nav-menu">
+      <script>
+          document.addEventListener("DOMContentLoaded", function () {
+              const deadline = new Date("{{ deadline }}"); // Flask에서 전달된 마감 시간
+              const countdownElement = document.getElementById("countdown");
+
+              function updateCountdown() {
+                  const now = new Date();
+                  const timeLeft = deadline - now; // 남은 시간 (밀리초)
+
+                  if (timeLeft <= 0) {
+                      countdownElement.innerHTML = "마감되었습니다!";
+                      clearInterval(timer);
+                      return;
+                  }
+
+                  const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+                  const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                  const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+                  const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+                  countdownElement.innerHTML = `${days}일 ${hours}시간 ${minutes}분 ${seconds}초 남음`;
+              }
+
+              updateCountdown(); // 초기 실행
+              const timer = setInterval(updateCountdown, 1000); // 매초 업데이트
+          });
+      </script>
+      
+  </head>
+
+  <body data-bs-spy="scroll" data-bs-target="#nav-menu">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
 
   <!-- 네비게이션 영역 시작 -->
@@ -27,10 +56,18 @@
       <li class="nav-item">
         <a class="nav-link text-white" href="voteresult.html">투표 결과</a></li>
       <li class="nav-item">
-        <a class="nav-link text-white" href="star.html">옵션2</a></li>
-        <li class="nav-item">
-            <a class="nav-link text-white" href="musicbox.html">옵션3</a></li>
-      <li class="nav-item dropdown" href="important.html">
+        <a class="nav-link text-white" href="login_page.html">옵션</a></li>
+        <!-- 로그인된 사용자만 로그아웃 버튼 보이기 -->
+        {% if current_user.is_authenticated %}
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/logout">로그아웃</a></li>
+        {% else %}
+            <!-- 로그인하지 않은 사용자만 로그인 버튼 보이기 -->
+            <li class="nav-item">
+                <a class="nav-link text-white" href="/login_page">로그인</a></li>
+        {% endif %}    
+            <!--
+      <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle text-white" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">네비게이션</a>
         <ul id="dropdowns" class="dropdown-menu bg-secondary">
           <li><a class="dropdown-item text-white" href="important.html">네비게이션옵션1</a></li>
@@ -38,29 +75,113 @@
           <li><a class="dropdown-item text-white" href="important.html">네비게이션옵션3</a></li>
         </ul> 
       </li>
+      -->
     </ul>
   </nav>
-            
-    <!-- 네비게이션 영역 끝 -->
+  <!-- 네비게이션 영역 끝 -->
 
-<!-- 메인화면 섹션 시작 -->
-    <section class="py-1 text-center" id="home">
+  <!-- 카운트다운 표시 -->
+  <div class="container text-center mt-5">
+      <h3>투표 마감까지</h3>
+      <h3 id="countdown" class="fw-bold text-danger">계산 중...</h3>
+  </div>
 
-      <div class="flex flex-col items-center bg-white min-h-screen">
-        <h1 class="text-black text-3xl font-bold mt-16 mb-6">
-            떡볶이 vs 치킨
-        </h1>
-        <div class="btn-group" role="group" aria-label="group1">
-          <input type="radio" class="btn-check" name="btnradio" id="btnradio1" autocomplete="off">
-          <label class="btn btn-outline-primary" for="btnradio1">떡볶이</label>
-        
-          <input type="radio" class="btn-check" name="btnradio" id="btnradio2" autocomplete="off">
-          <label class="btn btn-outline-primary" for="btnradio2">치킨</label>
-        </div>
-    </div>
+  <!-- 메인화면 섹션 시작 -->
+  <section class="py-1 text-center" id="home">
     
-  </section>
-  <!-- 메인화면 섹션 끝 -->
+    <div class="flex flex-col items-center bg-white min-h-screen">
+      <h1 class="text-black text-3xl font-bold mt-16 mb-6">
+          떡볶이 vs 치킨 최고의 야식은 ?
+      </h1>
+      {% if current_user.is_authenticated %} <!-- 로그인된 사용자만 보이는 내용 -->
+        {% if user_vote %}
+          <p>당신은 '{{ user_vote }}'를 선택했습니다!</p>
+        {% else %}
+        <div class="container mx-auto flex flex-col items-center justify-center">
+          <div class="flex flex-col md:flex-row items-center justify-center space-x-4 space-y-4 md:space-y-0">
+            
+            <!-- 떡볶이 카드 -->
+            <div id="tteokbokki" class="vote-container bg-red-600 text-white p-6 rounded-lg shadow-lg w-full max-w-xs cursor-pointer">
+              <h2 class="text-xl font-bold mb-2">떡볶이</h2>
+              <h3 class="text-white"><span id="tteokbokki-percent">50</span> %</h3>
+              <p id="tteokbokki-votes" class="text-sm text-gray-300">0표</p>
+            </div>
+      
+            <!-- 치킨 카드 -->
+            <div id="chicken" class="vote-container bg-yellow-400 text-black p-6 rounded-lg shadow-lg w-full max-w-xs cursor-pointer">
+              <h2 class="text-xl font-bold mb-2">치킨</h2>
+              <h3 class="text-gray-800"><span id="chicken-percent">50</span> %</h3>
+              <p id="chicken-votes" class="text-sm text-gray-700">0표</p>
+            </div>
+      
+          </div>
 
+        </div>
+      
+      {% endif %}
+    {% else %} <!-- 로그인되지 않은 사용자도 카드와 옵션을 볼 수 있음 -->
+      <div class="container mx-auto flex flex-col items-center justify-center">
+        <div class="flex flex-col md:flex-row items-center justify-center space-x-4 space-y-4 md:space-y-0">
+          <!-- 떡볶이 카드 -->
+          <div id="tteokbokki" class="vote-container bg-red-600 text-white p-6 rounded-lg shadow-lg w-full max-w-xs cursor-pointer" onclick="alertAndRedirect()">
+            <h2 class="text-xl font-bold mb-2">떡볶이</h2>
+            <h3 class="text-white"><span id="tteokbokki-percent">50</span> %</h3>
+            <p id="tteokbokki-votes" class="text-sm text-gray-300">0표</p>
+          </div>
+
+          <!-- 치킨 카드 -->
+          <div id="chicken" class="vote-container bg-yellow-400 text-black p-6 rounded-lg shadow-lg w-full max-w-xs cursor-pointer" onclick="alertAndRedirect()">
+              <h2 class="text-xl font-bold mb-2">치킨</h2>
+              <h3 class="text-gray-800"><span id="chicken-percent">50</span> %</h3>
+              <p id="chicken-votes" class="text-sm text-gray-700">0표</p>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+    </div>
+  </section>
+
+<script>
+    function alertAndRedirect() {
+        alert("로그인을 하세요!");
+        window.location.href = "{{ url_for('login_page') }}";  // 로그인 페이지로 리다이렉트
+    }
+</script>  
+
+</section>
+<!-- 메인화면 섹션 끝 -->
+
+<!-- jQuery CDN 추가 -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.querySelectorAll('.vote-container').forEach(container => {
+  container.addEventListener('click', function () {
+    const choice = this.id; // "tteokbokki" or "chicken"
+
+    fetch('/vote', {
+      method: 'POST',
+      body: new URLSearchParams({ choice }),
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    })
+    .then(response => {
+      if (!response.ok) {
+        return response.text().then(text => { throw new Error(text); });
+      }
+      return fetch('/results'); // 최신 결과 요청
+    })
+    .then(response => response.json())
+    .then(data => {
+      // 퍼센트 업데이트
+      document.getElementById('tteokbokki-percent').innerText = data["tteokbokki"];
+      document.getElementById('chicken-percent').innerText = data["chicken"];
+      
+      // 표 수 업데이트
+      document.getElementById('tteokbokki-votes').innerText = `${data["tteokbokki_votes"]}표`;
+      document.getElementById('chicken-votes').innerText = `${data["chicken_votes"]}표`;
+    })
+    .catch(error => alert("투표 중 오류 발생: " + error.message));
+  });
+});
+</script>
 </body>
 </html>

@@ -10,28 +10,41 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# 이메일 전송 함수
-def send_email(to_email, subject, body):
-    smtp_server = 'smtp.gmail.com'
-    smtp_port = 587
-    from_email = 'sophiang201@gmail.com'  # 발신자 이메일
-    from_password = 'zrnr kzqk pcei upxc'     # 발신자 이메일 비밀번호
+# 메일 보내는 함수
+def send_mail_to_voters():
+    with app.app_context():  # 애플리케이션 컨텍스트를 명시적으로 생성
+        users = User.query.filter_by(has_voted=True).all()  # 투표한 사용자들만 가져옴
+        # users = User.query.all() # 메일 보내지는지 확인
+        for user in users:
+            from_email = 'sophiang201@gmail.com'  # 발신자 이메일
+            from_password = 'zrnr kzqk pcei upxc'  # 발신자 이메일 비밀번호
+            try:
+                # 메일 설정
+                to_email = user.email  # 수신자 이메일 주소
+                
 
-    msg = MIMEMultipart()
-    msg['From'] = from_email
-    msg['To'] = to_email
-    msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain'))
+                # 메일 제목과 내용
+                subject = "투표 결과 안내"
+                body = f"{user.email}님, 투표 결과가 준비되었습니다!\n" 
 
-    try:
-        server = smtplib.SMTP(smtp_server, smtp_port)
-        server.starttls()  # 보안 연결 시작
-        server.login(from_email, from_password)
-        server.sendmail(from_email, to_email, msg.as_string())
-        server.quit()
-        print(f"Email sent to {to_email}")
-    except Exception as e:
-        print(f"Error: {e}")
+                # 메일 MIME 설정
+                msg = MIMEMultipart()
+                msg['From'] = from_email
+                msg['To'] = to_email
+                msg['Subject'] = subject
+
+                # 본문 설정
+                msg.attach(MIMEText(body, 'plain'))
+
+                # 이메일 서버 연결 및 보내기
+                with smtplib.SMTP('smtp.gmail.com', 587) as server:
+                    server.starttls()  # 보안 연결 시작
+                    server.login(from_email, from_password)
+                    server.sendmail(from_email, to_email, msg.as_string())
+                print(f"메일이 {to_email}로 발송되었습니다.")
+
+            except Exception as e:
+                print(f"메일 발송 실패: {e}")     
 
 # 이메일 주소를 JSON 파일에 저장하는 함수
 def save_email_to_json(email):

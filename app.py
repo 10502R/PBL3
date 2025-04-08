@@ -17,6 +17,23 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(app)
 
+#vote table 생성
+class Vote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    menu = db.Column(db.String(50), unique=True, nullable=False)
+    count = db.Column(db.Integer, default=0)
+
+#vote tavle 초기화
+def initialize_vote_table():
+    with app.app_context():
+        if not db.session.query(Vote).first():
+            db.session.add_all([
+                Vote(menu='chicken', count=0),
+                Vote(menu='tteok', count=0)
+            ])
+            db.session.commit()
+
+
 # 마감 시간 설정
 DEADLINE = datetime(2025, 4, 9, 0, 0, 0)
 
@@ -34,33 +51,30 @@ def index():
 # 딕셔너리 저장
 votes = {"tteokbokki": 0, "chicken": 0}
 
+
 @app.route('/vote', methods=['POST'])
 @login_required
 def vote():
-    choice = request.form.get('choice')
-
-    
-    if choice not in votes:  
-        return "error: Invalid choice", 400
-
-    #votes[choice] += 1  # 투표 수 증가
-    redis_client.incr(choice)
-
     user_cookie = request.cookies.get('vote')
     if user_cookie:
-        return f"You have already voted! : {choice}", 400    
+        return f"You have already voted. Your choice: {user_cookie}", 400  # 중복 투표 방지
+
+    choice = request.form.get('choice')
+    if choice not in votes:
+        return "error: Invalid choice", 400
 
     if current_user.has_voted:
-        return "You have already voted!"
-    
+        return "You have already voted!"    
+
+    votes[choice] += 1  # 투표 수 증가
+
+    vote_entry.count += 1
     current_user.has_voted = True
     db.session.commit()
 
     response = make_response(redirect('/results'))
-    response.set_cookie('vote', choice, max_age=60*3)  # 쿠키 설정 (3분)
+    response.set_cookie('vote', choice, max_age=60*5)  # 쿠키 설정 (5분)
     return response
-
-    return jsonify({"message": "Vote counted"})
 
 
 @app.route('/results', methods=['GET'])
@@ -88,7 +102,7 @@ migrate = Migrate(app, db)
 # Flask-Login 설정
 login_manager = LoginManager()
 login_manager.init_app(app)
-login_manager.login_view = "login"  # 로그인 페이지로 리다이렉트할 URL
+login_manager.login_view = "login_page"  # 로그인 페이지로 리다이렉트할 URL
 
 # User 모델 정의
 class User(UserMixin, db.Model):
@@ -144,49 +158,56 @@ def signup():
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('index'))  # 로그아웃 후 로그인 페이지로 리다이렉트
+    return redirect(url_for('/results'))  # 로그아웃 후 페이지로 리다이렉트
 
-# 메일 보내는 함수
 def send_mail_to_voters():
-    with app.app_context():  # 애플리케이션 컨텍스트를 명시적으로 생성
-        users = User.query.filter_by(has_voted=True).all()  # 투표한 사용자들만 가져옴
-        # users = User.query.all() # 메일 보내지는지 확인
+    with app.app_context():
+        users = User.query.filter_by(has_voted=True).all()
+
+        # 더 많은 표를 받은 메뉴 계산
+        winner = max(votes, key=votes.get)
+        vote_count = votes[winner]
+        total_votes = sum(votes.values())
+
+        if total_votes == 0:
+            result_message = "아직 투표 결과가 없습니다."
+        else:
+            result_message = f"가장 많은 표를 받은 메뉴는 '{winner}'이며, 총 {vote_count}표를 받았습니다!"
+
         for user in users:
-            from_email = 'sophiang201@gmail.com'  # 발신자 이메일
-            from_password = 'zrnr kzqk pcei upxc'  # 발신자 이메일 비밀번호
+            from_email = 'sophiang201@gmail.com'
+            from_password = 'zrnr kzqk pcei upxc'
             try:
-                # 메일 설정
-                to_email = user.email  # 수신자 이메일 주소
-
-                # 메일 제목과 내용
+                to_email = user.email
                 subject = "투표 결과 안내"
-                body = f"{user.email}님, 투표 결과가 준비되었습니다!"
+                body = (
+                    f"{user.email}님, 안녕하세요!\n\n"
+                    f"투표에 참여해주셔서 감사합니다.\n\n"
+                    f"{result_message}\n\n"
+                    "즐거운 하루 보내세요 :)"
+                )
 
-                # 메일 MIME 설정
                 msg = MIMEMultipart()
                 msg['From'] = from_email
                 msg['To'] = to_email
                 msg['Subject'] = subject
-
-                # 본문 설정
                 msg.attach(MIMEText(body, 'plain'))
 
-                # 이메일 서버 연결 및 보내기
                 with smtplib.SMTP('smtp.gmail.com', 587) as server:
-                    server.starttls()  # 보안 연결 시작
+                    server.starttls()
                     server.login(from_email, from_password)
                     server.sendmail(from_email, to_email, msg.as_string())
                 print(f"메일이 {to_email}로 발송되었습니다.")
 
             except Exception as e:
-                print(f"메일 발송 실패: {e}")       
+                print(f"메일 발송 실패: {e}") 
                 
 
 # 특정 시간에 메일 보내기 (쓰레드 사용)
 def send_mail_schedule():
-    send_time_str = "2025-04-08 15:22:00"  # 메일을 보내고 싶은 시간
+    send_time_str = "2025-04-08 21:22:00"  # 메일을 보내고 싶은 시간
     send_time = datetime.strptime(send_time_str, "%Y-%m-%d %H:%M:%S")
-    # send_time = datetime.strptime(DEADLINE)
+    # send_time = datetime.strptime(DEADLINE)  #투표 마감시간에 발송
     current_time = datetime.now()
 
     # 설정된 시간이 이미 지났다면, 다음 날로 설정
