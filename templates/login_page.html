@@ -8,24 +8,24 @@
 </head>
 <body>
     <div id="wrapper">
-        <h1>이메일을 입력해주세요.</h1>
-
-        {% if message %}
-            <p>{{ message }}</p>  <!-- 이메일 저장 후 메시지 -->
-            <p>{{ email }}로 결과가 전송됩니다!</p>
-
-            <!-- "투표 페이지로 돌아가기" 버튼 -->
-            <form action="/vote_page">
-                <button type="submit" id="back">투표 페이지로 돌아가기</button>
-            </form>
-        {% else %}
-            <form action="/login_page" method="POST">
-                <label for="email">Email : </label>
-                <input type="email" id="email" name="email" placeholder="결과를 전송받고 싶다면 이메일을 입력해주세요." required><br><br>
+        <h1>로그인</h1>
+            <form method="POST">
+                <label for="email">이메일</label>
+                <input type="email" id="email" name="email" required>
                 <input type="submit" id="login"value="로그인">
+                <!-- <button type="submit">로그인</button> -->
             </form>
-        {% endif %}
+            <p>아직 계정이 없으신가요? <a href="{{ url_for('signup') }}">회원가입</a></p>
+
+            <!-- 오류 메시지가 있을 경우 JavaScript로 팝업창을 띄운다 -->
+            {% if error_message %}
+                <script type="text/javascript">
+                    alert("{{ error_message }}");  // 전달받은 오류 메시지를 alert로 표시
+                </script>
+            {% endif %}
     </div>
+
+    
 
 </body>
 </html>

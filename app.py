@@ -1,4 +1,7 @@
-from flask import Flask, render_template, request, jsonify, make_response, redirect, send_from_directory
+from flask import Flask, render_template, request, jsonify, make_response, redirect, send_from_directory, url_for
+from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from flask_migrate import Migrate
 from datetime import datetime
 import redis
 import json
@@ -11,6 +14,9 @@ import threading
 import os
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key' 
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
+db = SQLAlchemy(app)
 
 # 마감 시간 설정
 DEADLINE = datetime(2025, 4, 8, 0, 0, 0)
@@ -130,21 +136,69 @@ def send_scheduled_email():
         print("Emails sent!")
     except FileNotFoundError:
         print("No emails found in the JSON file.")
+# Flask-Migrate 초기화
+migrate = Migrate(app, db)
 
-@app.route('/login_page', methods=['GET', 'POST'])
+# Flask-Login 설정
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"  # 로그인 페이지로 리다이렉트할 URL
+
+# User 모델 정의
+class User(UserMixin, db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    has_voted = db.Column(db.Boolean, default=False)  # 투표 여부 필드
+
+    def __repr__(self):
+        return f"User('{self.email}')"
+    
+# 로그인 시 유저 로드 함수
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+# 로그인 페이지
+@app.route("/login_page", methods=["GET", "POST"])
 def login_page():
-    if request.method == 'POST':
+    if request.method == "POST":
         email = request.form['email']
-        save_email_to_json(email)
-        return render_template('login_page.html', email=email, message="로그인되었습니다.")
-    
-    try:
-        with open('emails.json', 'r') as file:
-            emails = json.load(file)
-    except FileNotFoundError:
-        emails = []
-    
-    return render_template('login_page.html', emails=emails)
+        user = User.query.filter_by(email=email).first()
+
+        if user:  # 이메일이 데이터베이스에 있으면 로그인 처리
+            login_user(user)
+            return redirect(url_for('index'))  # 로그인 후 대시보드로 리다이렉트
+        else:
+            #return "User not found. Please try again."  # 이메일이 없으면 오류 메시지
+            error_message="가입된 이메일이 없습니다. 다시 확인해주세요."
+            return render_template('login_page.html', error_message=error_message)  # 오류 메시지 전달
+
+    return render_template('login_page.html')  # login.html 렌더링
+
+# 회원가입 페이지
+@app.route("/signup", methods=["GET", "POST"])
+def signup():
+    if request.method == "POST":
+        email = request.form['email']
+        user = User.query.filter_by(email=email).first()
+
+        if user:  # 이메일이 이미 존재하면 오류 메시지 출력
+            return render_template('signup.html', message="이메일이 이미 존재합니다. 로그인 페이지로 이동합니다.")
+        
+        # 새로운 사용자 추가
+        new_user = User(email=email)
+        db.session.add(new_user)
+        db.session.commit()
+        return render_template('signup.html', message="회원가입이 완료되었습니다! 로그인 페이지로 이동합니다.")
+
+    return render_template('signup.html')  # signup.html 렌더링
+
+# 로그아웃 처리
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return redirect(url_for('index'))  # 로그아웃 후 로그인 페이지로 리다이렉트
 
 if __name__ == '__main__':
     threading.Thread(target=schedule_email_send, daemon=True).start()
