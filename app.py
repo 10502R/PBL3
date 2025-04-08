@@ -18,7 +18,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 db = SQLAlchemy(app)
 
 # 마감 시간 설정
-DEADLINE = datetime(2025, 4, 8, 0, 0, 0)
+DEADLINE = datetime(2025, 4, 9, 0, 0, 0)
 
 # Redis 연결 설정
 redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
@@ -35,9 +35,11 @@ def index():
 votes = {"tteokbokki": 0, "chicken": 0}
 
 @app.route('/vote', methods=['POST'])
+@login_required
 def vote():
     choice = request.form.get('choice')
 
+    
     if choice not in votes:  
         return "error: Invalid choice", 400
 
@@ -47,6 +49,12 @@ def vote():
     user_cookie = request.cookies.get('vote')
     if user_cookie:
         return f"You have already voted! : {choice}", 400    
+
+    if current_user.has_voted:
+        return "You have already voted!"
+    
+    current_user.has_voted = True
+    db.session.commit()
 
     response = make_response(redirect('/results'))
     response.set_cookie('vote', choice, max_age=60*3)  # 쿠키 설정 (3분)
@@ -142,6 +150,7 @@ def logout():
 def send_mail_to_voters():
     with app.app_context():  # 애플리케이션 컨텍스트를 명시적으로 생성
         users = User.query.filter_by(has_voted=True).all()  # 투표한 사용자들만 가져옴
+        # users = User.query.all() # 메일 보내지는지 확인
         for user in users:
             from_email = 'sophiang201@gmail.com'  # 발신자 이메일
             from_password = 'zrnr kzqk pcei upxc'  # 발신자 이메일 비밀번호
@@ -175,8 +184,9 @@ def send_mail_to_voters():
 
 # 특정 시간에 메일 보내기 (쓰레드 사용)
 def send_mail_schedule():
-    send_time_str = "2025-04-08 01:27:00"  # 메일을 보내고 싶은 시간
+    send_time_str = "2025-04-08 15:22:00"  # 메일을 보내고 싶은 시간
     send_time = datetime.strptime(send_time_str, "%Y-%m-%d %H:%M:%S")
+    # send_time = datetime.strptime(DEADLINE)
     current_time = datetime.now()
 
     # 설정된 시간이 이미 지났다면, 다음 날로 설정
