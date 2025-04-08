@@ -16,45 +16,35 @@ app = Flask(__name__)
 DEADLINE = datetime(2025, 4, 8, 0, 0, 0)
 
 # Redis 연결 설정
-redis_client = redis.Redis(host='localhost', port=6379, db=0, decode_responses=True)
+redis_client = redis.Redis(host='redis', port=6379, db=0, decode_responses=True)
 
 # 투표 결과 저장
 votes = {"떡볶이": 0, "치킨": 0}
 
 @app.route('/')
 def index():
-    return render_template('index.html', deadline=DEADLINE.isoformat(), user_vote=user_vote)
+    user_cookie = request.cookies.get('vote')
+    return render_template('index.html', deadline=DEADLINE.isoformat(), user_vote=user_cookie)
 
 # 딕셔너리 저장
 votes = {"tteokbokki": 0, "chicken": 0}
 
 @app.route('/vote', methods=['POST'])
 def vote():
-    choice = request.form.get('choice')
+    user_cookie = request.cookies.get('vote')
+    if user_cookie:
+        return f"You have already voted. Your choice: {user_cookie}", 400  # 중복 투표 방지
 
-    if choice not in votes:  
+    choice = request.form.get('choice')
+    if choice not in votes:
         return "error: Invalid choice", 400
 
     votes[choice] += 1  # 투표 수 증가
-    
-    user_cookie = request.cookies.get('vote')
-    if user_cookie:
-        return "You have already voted!", 400
-    
-    redis_client.incr(choice)
+
     response = make_response(redirect('/results'))
-    response.set_cookie('vote', choice, max_age=60)  # 쿠키 설정 (7일)
+    response.set_cookie('vote', choice, max_age=60*5)  # 쿠키 설정 (5분)
     return response
-
-    return jsonify({"message": "Vote counted"})
-
-
-@app.route('/my-vote', methods=['GET'])
-def my_vote():
-    user_cookie = request.cookies.get('vote')
-    if not user_cookie:
-        return "You haven't voted yet!", 404
-    return f"your choice: {user_cookie}", 200
+    
 
 @app.route('/results', methods=['GET'])
 def results():
@@ -154,4 +144,4 @@ def login_page():
 
 if __name__ == '__main__':
     threading.Thread(target=schedule_email_send, daemon=True).start()
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=5000, debug=True)
